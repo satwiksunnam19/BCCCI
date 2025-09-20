@@ -30,9 +30,12 @@ def load_model():
         
         device = 'cpu'  # Use CPU for deployment
         model = ProductionSiameseUNet(in_channels=6, dropout_rate=0.1)
-        
-        # Load the trained weights
-        checkpoint = torch.load('best_model.pth', map_location=device)
+        # Download from Hugging Face
+        from huggingface_hub import hf_hub_download
+        model_path = hf_hub_download(repo_id="Satwik19/hurry", 
+                                    filename="best_model.pth")
+            # Load the trained weights
+        checkpoint = torch.load(model_path, map_location=device)
         if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
             model.load_state_dict(checkpoint['state_dict'])
         else:
