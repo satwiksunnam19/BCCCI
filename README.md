@@ -23,8 +23,8 @@ This project provides an end-to-end solution for analyzing flood impacts from hu
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd hurricane-flood-analysis
+git clone <https://github.com/satwiksunnam19/BCCCI/>
+cd BCCCI
 ```
 
 2. Install dependencies:
