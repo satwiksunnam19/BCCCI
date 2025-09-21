@@ -13,3 +13,6 @@ huggingface_hub
 earthengine-api
 folium
 streamlit-folium
+earthaccess 
+pandas 
+geopandas
