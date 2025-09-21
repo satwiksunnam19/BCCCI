@@ -15,7 +15,7 @@ import warnings
 import traceback
 
 # NEW: Import the analysis function
-from population_analysis import run_complete_analysis
+# from population_analysis import run_complete_analysis
 
 warnings.filterwarnings('ignore')
 
@@ -370,7 +370,7 @@ def run_production_training():
     dl_flood_map = generate_flood_map('best_model.pth', val_pre_path, val_post_path, device=device)
     
     # Run the full population analysis
-    run_complete_analysis(val_pre_path, val_post_path, dl_flood_map, bbox)
+    # run_complete_analysis(val_pre_path, val_post_path, dl_flood_map, bbox)
 
 if __name__ == "__main__":
     run_production_training()

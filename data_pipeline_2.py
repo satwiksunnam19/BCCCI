@@ -534,14 +534,13 @@ if __name__ == "__main__":
                 'pre_days': 30,
                 'post_days': 30
             },
-            Add more hurricanes here:
-            {
-                'name': 'Fiona',
-                'date': '2022-09-18',
-                'bbox': [-67.5, 17.8, -65.2, 19.0],  # Puerto Rico
-                'pre_days': 21,
-                'post_days': 21
-            }
+            # {
+            #     'name': 'Fiona',
+            #     'date': '2022-09-18',
+            #     'bbox': [-67.5, 17.8, -65.2, 19.0],  # Puerto Rico
+            #     'pre_days': 21,
+            #     'post_days': 21
+            # }
         ],
         'data_settings': {
             'temporal_sampling': 'weekly',  # Change to 'single' for original behavior

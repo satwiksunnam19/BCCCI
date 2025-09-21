@@ -1,6 +1,3 @@
-# Hurricane Analysis with Real WorldPop Population Data
-# File: population_analysis_real.py
-
 import torch
 import numpy as np
 import json
@@ -13,7 +10,6 @@ import warnings
 import rasterio
 warnings.filterwarnings('ignore')
 
-# Import the reliable downloader
 from pop_data_donwload import ImprovedWorldPopHandler
 
 class RealPopulationAnalyzer:
@@ -123,7 +119,6 @@ class RealPopulationAnalyzer:
         print(f"Calculating population impact using REAL WorldPop data...")
         
         try:
-            # Ensure same shape
             if flood_map.shape != population_data.shape:
                 print(f"   Resizing flood map from {flood_map.shape} to {population_data.shape}")
                 scale = (population_data.shape[0]/flood_map.shape[0], 
@@ -659,25 +654,100 @@ def run_real_worldpop_analysis(force_redownload=False):
         'population_data': population_data,
         'visualization_path': visualization_path,
         'summary': summary_for_questions,
-        'population_file': analyzer.population_file
+        'population_file': analyzer.population_file,
+        # Add the maps you will save/export:
+        'dl_flood_map': dl_flood_map,          # original full-res flood probabilities (if available)
+        'dl_flood_map_ds': dl_flood_map_ds,    # downsampled / analysis-sized flood map (aligned to population analysis)
+        'dl_affected_map': dl_affected_map     # affected-population map (same shape as population_data)
     }
+
+import rasterio
+import numpy as np
+import rasterio
+from scipy.ndimage import zoom
+from pathlib import Path
+
+def save_flood_map_to_geotiff(flood_map, reference_tiff, output_path, nodata=None):
+    """
+    Save 2D numpy array to GeoTIFF using metadata from reference_tiff.
+    If shapes don't match, resamples the flood_map using scipy.ndimage.zoom
+    (bilinear-like via order=1).
+    Arguments:
+      - flood_map: 2D numpy array (H x W) or array-like
+      - reference_tiff: path to reference raster (for meta, CRS, transform, shape)
+      - output_path: path-like (string or Path)
+      - nodata: nodata value to set (optional)
+    """
+    output_path = Path(output_path)
+    flood_arr = np.array(flood_map, dtype=np.float32)
+    if flood_arr.ndim != 2:
+        # try to squeeze singleton dims
+        flood_arr = np.squeeze(flood_arr)
+    if flood_arr.ndim != 2:
+        raise ValueError("flood_map must be a 2D array")
+
+    with rasterio.open(reference_tiff) as ref:
+        meta = ref.meta.copy()
+        ref_h = ref.height
+        ref_w = ref.width
+
+    # If shapes differ, resample (simple, fast, and usually fine when arrays are aligned)
+    if flood_arr.shape != (ref_h, ref_w):
+        scale_y = ref_h / flood_arr.shape[0]
+        scale_x = ref_w / flood_arr.shape[1]
+        print(f"Resampling array from {flood_arr.shape} -> {(ref_h, ref_w)} (scale_y={scale_y:.4f}, scale_x={scale_x:.4f})")
+        flood_resampled = zoom(flood_arr, (scale_y, scale_x), order=1)  # bilinear-ish
+    else:
+        flood_resampled = flood_arr
+
+    meta.update({
+        'count': 1,
+        'dtype': 'float32',
+        'compress': 'lzw'
+    })
+    if nodata is not None:
+        meta.update({'nodata': nodata})
+
+    with rasterio.open(str(output_path), 'w', **meta) as dst:
+        dst.write(flood_resampled.astype('float32'), 1)
+
+    print(f"Saved GeoTIFF: {output_path} (shape: {flood_resampled.shape})")
+
+# def run_complete_analysis(force_redownload=False):
+#     """Alias for backward compatibility — calls run_real_worldpop_analysis."""
+#     return run_real_worldpop_analysis(force_redownload=force_redownload)
 
 if __name__ == "__main__":
     print("Starting REAL WorldPop Hurricane Impact Analysis...")
-    
     try:
         # Set force_redownload=True if you want to download fresh data
         results = run_real_worldpop_analysis(force_redownload=False)
-        
+
         if results:
             print(f"\nSUCCESS! Real WorldPop analysis complete!")
             print(f"Population file used: {results['population_file']}")
             print(f"Total population analyzed: {results['summary']['total_population']:,.0f}")
             print(f"Affected by {results['hurricane']}: {results['summary']['dl_affected']:,.0f} people")
-            print(f"\nReady to answer your professor's questions with REAL population data!")
+
+            # Save flood probability map (downsampled / aligned map) and affected-pop map -> GeoTIFFs
+            save_flood_map_to_geotiff(
+                flood_map=results['dl_flood_map_ds'],
+                reference_tiff=results['population_file'],
+                output_path=Path("dl_flood_probability.tif")
+            )
+
+            save_flood_map_to_geotiff(
+                flood_map=results['dl_affected_map'],
+                reference_tiff=results['population_file'],
+                output_path=Path("dl_affected_population.tif")
+            )
+
+            print("\nFiles written:")
+            print("  - dl_flood_probability.tif   (float32, 0..1 flood prob)")
+            print("  - dl_affected_population.tif (float32, people per pixel)")
         else:
             print("\nAnalysis failed - check error messages above")
-            
+
     except Exception as e:
         print(f"\nUnexpected error: {e}")
         import traceback

@@ -1,0 +1,994 @@
+{
+  "hurricanes": [],
+  "processing_log": [],
+  "band_statistics": {},
+  "created": "2025-09-18T09:46:09.440603",
+  "processed_data": [
+    {
+      "hurricane": "Ian",
+      "periods": {
+        "pre_week_4": {
+          "file_path": "hurricane_data/Ian_pre_week_4_processed.npy",
+          "shape": [
+            6,
+            3660,
+            3660
+          ],
+          "metadata": {
+            "shape": [
+              6,
+              3660,
+              3660
+            ],
+            "bands": [
+              "B02",
+              "B03",
+              "B04",
+              "B8A",
+              "B11",
+              "B12"
+            ],
+            "band_details": {
+              "B02": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022243T155831.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022243T155831.v2.0.B02.tif",
+                  "HLS.S30.T17RMJ.2022240T160521.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022240T160521.v2.0.B02.tif",
+                  "HLS.S30.T17RML.2022243T155831.v2.0.B02.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.0377999544143677,
+                  "mean": 0.05023797228932381
+                }
+              },
+              "B03": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022243T155831.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022243T155831.v2.0.B03.tif",
+                  "HLS.S30.T17RMJ.2022240T160521.v2.0.B03.tif",
+                  "HLS.S30.T17RML.2022243T155831.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022240T160521.v2.0.B03.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.9619999527931213,
+                  "mean": 0.0692896619439125
+                }
+              },
+              "B04": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022243T155831.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022243T155831.v2.0.B04.tif",
+                  "HLS.S30.T17RMJ.2022240T160521.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022240T160521.v2.0.B04.tif",
+                  "HLS.S30.T17RML.2022243T155831.v2.0.B04.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.0037000179290771,
+                  "mean": 0.0638316199183464
+                }
+              },
+              "B8A": {
+                "files_used": [
+                  "HLS.S30.T17RMJ.2022240T160521.v2.0.B8A.tif",
+                  "HLS.S30.T17RML.2022243T155831.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022240T160521.v2.0.B8A.tif",
+                  "HLS.S30.T17RLL.2022243T155831.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022243T155831.v2.0.B8A.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.0877000093460083,
+                  "mean": 0.28076696395874023
+                }
+              },
+              "B11": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022243T155831.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022243T155831.v2.0.B11.tif",
+                  "HLS.S30.T17RMJ.2022240T160521.v2.0.B11.tif",
+                  "HLS.S30.T17RML.2022243T155831.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022240T160521.v2.0.B11.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.7329999804496765,
+                  "mean": 0.17039678990840912
+                }
+              },
+              "B12": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022243T155831.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022243T155831.v2.0.B12.tif",
+                  "HLS.S30.T17RMJ.2022240T160521.v2.0.B12.tif",
+                  "HLS.S30.T17RML.2022243T155831.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022240T160521.v2.0.B12.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.6040999889373779,
+                  "mean": 0.08981592953205109
+                }
+              }
+            },
+            "composite_method": "median",
+            "period_info": {
+              "type": "pre",
+              "start": "2022-08-28 00:00:00",
+              "end": "2022-09-04 00:00:00",
+              "name": "pre_week_4"
+            }
+          }
+        },
+        "pre_week_3": {
+          "file_path": "hurricane_data/Ian_pre_week_3_processed.npy",
+          "shape": [
+            6,
+            3660,
+            3660
+          ],
+          "metadata": {
+            "shape": [
+              6,
+              3660,
+              3660
+            ],
+            "bands": [
+              "B02",
+              "B03",
+              "B04",
+              "B8A",
+              "B11",
+              "B12"
+            ],
+            "band_details": {
+              "B02": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022248T155819.v2.0.B02.tif",
+                  "HLS.S30.T17RMJ.2022248T155819.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022248T155819.v2.0.B02.tif",
+                  "HLS.S30.T17RLK.2022248T155819.v2.0.B02.tif",
+                  "HLS.S30.T17RML.2022248T155819.v2.0.B02.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.1941999197006226,
+                  "mean": 0.030464785173535347
+                }
+              },
+              "B03": {
+                "files_used": [
+                  "HLS.S30.T17RMJ.2022248T155819.v2.0.B03.tif",
+                  "HLS.S30.T17RLL.2022248T155819.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022248T155819.v2.0.B03.tif",
+                  "HLS.S30.T17RLK.2022248T155819.v2.0.B03.tif",
+                  "HLS.S30.T17RML.2022248T155819.v2.0.B03.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.00029999998514540493,
+                  "max": 0.8798999786376953,
+                  "mean": 0.049733154475688934
+                }
+              },
+              "B04": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022248T155819.v2.0.B04.tif",
+                  "HLS.S30.T17RMJ.2022248T155819.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022248T155819.v2.0.B04.tif",
+                  "HLS.S30.T17RLK.2022248T155819.v2.0.B04.tif",
+                  "HLS.S30.T17RML.2022248T155819.v2.0.B04.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.8894000053405762,
+                  "mean": 0.04311654344201088
+                }
+              },
+              "B8A": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022248T155819.v2.0.B8A.tif",
+                  "HLS.S30.T17RML.2022248T155819.v2.0.B8A.tif",
+                  "HLS.S30.T17RMJ.2022248T155819.v2.0.B8A.tif",
+                  "HLS.S30.T17RLL.2022248T155819.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022248T155819.v2.0.B8A.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.8933999538421631,
+                  "mean": 0.23801162838935852
+                }
+              },
+              "B11": {
+                "files_used": [
+                  "HLS.S30.T17RMJ.2022248T155819.v2.0.B11.tif",
+                  "HLS.S30.T17RLL.2022248T155819.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022248T155819.v2.0.B11.tif",
+                  "HLS.S30.T17RLK.2022248T155819.v2.0.B11.tif",
+                  "HLS.S30.T17RML.2022248T155819.v2.0.B11.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.00019999999494757503,
+                  "max": 0.6158999800682068,
+                  "mean": 0.11497292667627335
+                }
+              },
+              "B12": {
+                "files_used": [
+                  "HLS.S30.T17RMJ.2022248T155819.v2.0.B12.tif",
+                  "HLS.S30.T17RLL.2022248T155819.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022248T155819.v2.0.B12.tif",
+                  "HLS.S30.T17RLK.2022248T155819.v2.0.B12.tif",
+                  "HLS.S30.T17RML.2022248T155819.v2.0.B12.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0007999999797903001,
+                  "max": 0.4936999976634979,
+                  "mean": 0.06245184689760208
+                }
+              }
+            },
+            "composite_method": "median",
+            "period_info": {
+              "type": "pre",
+              "start": "2022-09-04 00:00:00",
+              "end": "2022-09-11 00:00:00",
+              "name": "pre_week_3"
+            }
+          }
+        },
+        "pre_week_2": {
+          "file_path": "hurricane_data/Ian_pre_week_2_processed.npy",
+          "shape": [
+            6,
+            3660,
+            3660
+          ],
+          "metadata": {
+            "shape": [
+              6,
+              3660,
+              3660
+            ],
+            "bands": [
+              "B02",
+              "B03",
+              "B04",
+              "B8A",
+              "B11",
+              "B12"
+            ],
+            "band_details": {
+              "B02": {
+                "files_used": [
+                  "HLS.S30.T17RMK.2022255T160519.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022258T155819.v2.0.B02.tif",
+                  "HLS.S30.T17RMJ.2022255T160519.v2.0.B02.tif",
+                  "HLS.S30.T17RML.2022258T155819.v2.0.B02.tif",
+                  "HLS.S30.T17RLK.2022258T155819.v2.0.B02.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.153499960899353,
+                  "mean": 0.21515026688575745
+                }
+              },
+              "B03": {
+                "files_used": [
+                  "HLS.S30.T17RMK.2022255T160519.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022258T155819.v2.0.B03.tif",
+                  "HLS.S30.T17RMJ.2022255T160519.v2.0.B03.tif",
+                  "HLS.S30.T17RML.2022258T155819.v2.0.B03.tif",
+                  "HLS.S30.T17RLK.2022258T155819.v2.0.B03.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.2340999841690063,
+                  "mean": 0.21955862641334534
+                }
+              },
+              "B04": {
+                "files_used": [
+                  "HLS.S30.T17RMK.2022258T155819.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022255T160519.v2.0.B04.tif",
+                  "HLS.S30.T17RMJ.2022255T160519.v2.0.B04.tif",
+                  "HLS.S30.T17RML.2022258T155819.v2.0.B04.tif",
+                  "HLS.S30.T17RLK.2022258T155819.v2.0.B04.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.2274999618530273,
+                  "mean": 0.21785220503807068
+                }
+              },
+              "B8A": {
+                "files_used": [
+                  "HLS.S30.T17RML.2022258T155819.v2.0.B8A.tif",
+                  "HLS.S30.T17RLK.2022258T155819.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022258T155819.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022255T160519.v2.0.B8A.tif",
+                  "HLS.S30.T17RMJ.2022255T160519.v2.0.B8A.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.222999930381775,
+                  "mean": 0.37716802954673767
+                }
+              },
+              "B11": {
+                "files_used": [
+                  "HLS.S30.T17RMK.2022258T155819.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022255T160519.v2.0.B11.tif",
+                  "HLS.S30.T17RMJ.2022255T160519.v2.0.B11.tif",
+                  "HLS.S30.T17RML.2022258T155819.v2.0.B11.tif",
+                  "HLS.S30.T17RLK.2022258T155819.v2.0.B11.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.7985999584197998,
+                  "mean": 0.18545949459075928
+                }
+              },
+              "B12": {
+                "files_used": [
+                  "HLS.S30.T17RMK.2022258T155819.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022255T160519.v2.0.B12.tif",
+                  "HLS.S30.T17RMJ.2022255T160519.v2.0.B12.tif",
+                  "HLS.S30.T17RML.2022258T155819.v2.0.B12.tif",
+                  "HLS.S30.T17RLK.2022258T155819.v2.0.B12.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.5712000131607056,
+                  "mean": 0.13063155114650726
+                }
+              }
+            },
+            "composite_method": "median",
+            "period_info": {
+              "type": "pre",
+              "start": "2022-09-11 00:00:00",
+              "end": "2022-09-18 00:00:00",
+              "name": "pre_week_2"
+            }
+          }
+        },
+        "pre_week_1": {
+          "file_path": "hurricane_data/Ian_pre_week_1_processed.npy",
+          "shape": [
+            6,
+            3660,
+            3660
+          ],
+          "metadata": {
+            "shape": [
+              6,
+              3660,
+              3660
+            ],
+            "bands": [
+              "B02",
+              "B03",
+              "B04",
+              "B8A",
+              "B11",
+              "B12"
+            ],
+            "band_details": {
+              "B02": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022263T155941.v2.0.B02.tif",
+                  "HLS.S30.T17RML.2022263T155941.v2.0.B02.tif",
+                  "HLS.S30.T17RMJ.2022263T155941.v2.0.B02.tif",
+                  "HLS.S30.T17RLL.2022263T155941.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022263T155941.v2.0.B02.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.3535000085830688,
+                  "mean": 0.06269589066505432
+                }
+              },
+              "B03": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022263T155941.v2.0.B03.tif",
+                  "HLS.S30.T17RML.2022263T155941.v2.0.B03.tif",
+                  "HLS.S30.T17RLL.2022263T155941.v2.0.B03.tif",
+                  "HLS.S30.T17RMJ.2022263T155941.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022263T155941.v2.0.B03.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.1074999570846558,
+                  "mean": 0.0672726035118103
+                }
+              },
+              "B04": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022263T155941.v2.0.B04.tif",
+                  "HLS.S30.T17RML.2022263T155941.v2.0.B04.tif",
+                  "HLS.S30.T17RMJ.2022263T155941.v2.0.B04.tif",
+                  "HLS.S30.T17RLL.2022263T155941.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022263T155941.v2.0.B04.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.2694000005722046,
+                  "mean": 0.06961200386285782
+                }
+              },
+              "B8A": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022263T155941.v2.0.B8A.tif",
+                  "HLS.S30.T17RMJ.2022263T155941.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022263T155941.v2.0.B8A.tif",
+                  "HLS.S30.T17RLK.2022263T155941.v2.0.B8A.tif",
+                  "HLS.S30.T17RML.2022263T155941.v2.0.B8A.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.2806999683380127,
+                  "mean": 0.24408219754695892
+                }
+              },
+              "B11": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022263T155941.v2.0.B11.tif",
+                  "HLS.S30.T17RML.2022263T155941.v2.0.B11.tif",
+                  "HLS.S30.T17RLL.2022263T155941.v2.0.B11.tif",
+                  "HLS.S30.T17RMJ.2022263T155941.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022263T155941.v2.0.B11.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.6964999437332153,
+                  "mean": 0.12297970801591873
+                }
+              },
+              "B12": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022263T155941.v2.0.B12.tif",
+                  "HLS.S30.T17RML.2022263T155941.v2.0.B12.tif",
+                  "HLS.S30.T17RLL.2022263T155941.v2.0.B12.tif",
+                  "HLS.S30.T17RMJ.2022263T155941.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022263T155941.v2.0.B12.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.5317000150680542,
+                  "mean": 0.06770079582929611
+                }
+              }
+            },
+            "composite_method": "median",
+            "period_info": {
+              "type": "pre",
+              "start": "2022-09-18 00:00:00",
+              "end": "2022-09-25 00:00:00",
+              "name": "pre_week_1"
+            }
+          }
+        },
+        "post_week_1": {
+          "file_path": "hurricane_data/Ian_post_week_1_processed.npy",
+          "shape": [
+            6,
+            3660,
+            3660
+          ],
+          "metadata": {
+            "shape": [
+              6,
+              3660,
+              3660
+            ],
+            "bands": [
+              "B02",
+              "B03",
+              "B04",
+              "B8A",
+              "B11",
+              "B12"
+            ],
+            "band_details": {
+              "B02": {
+                "files_used": [
+                  "HLS.S30.T17RMJ.2022275T160509.v2.0.B02.tif",
+                  "HLS.S30.T17RML.2022278T160119.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022275T160509.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022278T160119.v2.0.B02.tif",
+                  "HLS.S30.T17RLL.2022278T160119.v2.0.B02.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.1175999641418457,
+                  "mean": 0.05672233924269676
+                }
+              },
+              "B03": {
+                "files_used": [
+                  "HLS.S30.T17RMJ.2022275T160509.v2.0.B03.tif",
+                  "HLS.S30.T17RML.2022278T160119.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022275T160509.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022278T160119.v2.0.B03.tif",
+                  "HLS.S30.T17RLL.2022278T160119.v2.0.B03.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.0475000143051147,
+                  "mean": 0.07044750452041626
+                }
+              },
+              "B04": {
+                "files_used": [
+                  "HLS.S30.T17RML.2022278T160119.v2.0.B04.tif",
+                  "HLS.S30.T17RMJ.2022275T160509.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022275T160509.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022278T160119.v2.0.B04.tif",
+                  "HLS.S30.T17RLL.2022278T160119.v2.0.B04.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.084399938583374,
+                  "mean": 0.0651651993393898
+                }
+              },
+              "B8A": {
+                "files_used": [
+                  "HLS.S30.T17RMK.2022278T160119.v2.0.B8A.tif",
+                  "HLS.S30.T17RLL.2022278T160119.v2.0.B8A.tif",
+                  "HLS.S30.T17RML.2022278T160119.v2.0.B8A.tif",
+                  "HLS.S30.T17RMJ.2022275T160509.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022275T160509.v2.0.B8A.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.2669999599456787,
+                  "mean": 0.25721266865730286
+                }
+              },
+              "B11": {
+                "files_used": [
+                  "HLS.S30.T17RML.2022278T160119.v2.0.B11.tif",
+                  "HLS.S30.T17RMJ.2022275T160509.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022275T160509.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022278T160119.v2.0.B11.tif",
+                  "HLS.S30.T17RLL.2022278T160119.v2.0.B11.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.8410999774932861,
+                  "mean": 0.160463348031044
+                }
+              },
+              "B12": {
+                "files_used": [
+                  "HLS.S30.T17RML.2022278T160119.v2.0.B12.tif",
+                  "HLS.S30.T17RMJ.2022275T160509.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022275T160509.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022278T160119.v2.0.B12.tif",
+                  "HLS.S30.T17RLL.2022278T160119.v2.0.B12.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 9.999999747378752e-05,
+                  "max": 0.6931999921798706,
+                  "mean": 0.09098932892084122
+                }
+              }
+            },
+            "composite_method": "median",
+            "period_info": {
+              "type": "post",
+              "start": "2022-10-01 00:00:00",
+              "end": "2022-10-08 00:00:00",
+              "name": "post_week_1"
+            }
+          }
+        },
+        "post_week_2": {
+          "file_path": "hurricane_data/Ian_post_week_2_processed.npy",
+          "shape": [
+            6,
+            3660,
+            3660
+          ],
+          "metadata": {
+            "shape": [
+              6,
+              3660,
+              3660
+            ],
+            "bands": [
+              "B02",
+              "B03",
+              "B04",
+              "B8A",
+              "B11",
+              "B12"
+            ],
+            "band_details": {
+              "B02": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022283T160201.v2.0.B02.tif",
+                  "HLS.S30.T17RML.2022283T160201.v2.0.B02.tif",
+                  "HLS.S30.T17RMJ.2022283T160201.v2.0.B02.tif",
+                  "HLS.S30.T17RLL.2022283T160201.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022283T160201.v2.0.B02.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 9.999999747378752e-05,
+                  "max": 0.9120999574661255,
+                  "mean": 0.14739927649497986
+                }
+              },
+              "B03": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022283T160201.v2.0.B03.tif",
+                  "HLS.S30.T17RML.2022283T160201.v2.0.B03.tif",
+                  "HLS.S30.T17RLL.2022283T160201.v2.0.B03.tif",
+                  "HLS.S30.T17RMJ.2022283T160201.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022283T160201.v2.0.B03.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0005999999702908099,
+                  "max": 0.8830999732017517,
+                  "mean": 0.15594373643398285
+                }
+              },
+              "B04": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022283T160201.v2.0.B04.tif",
+                  "HLS.S30.T17RML.2022283T160201.v2.0.B04.tif",
+                  "HLS.S30.T17RMJ.2022283T160201.v2.0.B04.tif",
+                  "HLS.S30.T17RLL.2022283T160201.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022283T160201.v2.0.B04.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.9786999821662903,
+                  "mean": 0.16724413633346558
+                }
+              },
+              "B8A": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022283T160201.v2.0.B8A.tif",
+                  "HLS.S30.T17RMJ.2022283T160201.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022283T160201.v2.0.B8A.tif",
+                  "HLS.S30.T17RLK.2022283T160201.v2.0.B8A.tif",
+                  "HLS.S30.T17RML.2022283T160201.v2.0.B8A.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.010699987411499,
+                  "mean": 0.3545258939266205
+                }
+              },
+              "B11": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022283T160201.v2.0.B11.tif",
+                  "HLS.S30.T17RML.2022283T160201.v2.0.B11.tif",
+                  "HLS.S30.T17RLL.2022283T160201.v2.0.B11.tif",
+                  "HLS.S30.T17RMJ.2022283T160201.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022283T160201.v2.0.B11.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0015999999595806003,
+                  "max": 0.6566999554634094,
+                  "mean": 0.21659930050373077
+                }
+              },
+              "B12": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022283T160201.v2.0.B12.tif",
+                  "HLS.S30.T17RML.2022283T160201.v2.0.B12.tif",
+                  "HLS.S30.T17RLL.2022283T160201.v2.0.B12.tif",
+                  "HLS.S30.T17RMJ.2022283T160201.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022283T160201.v2.0.B12.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.002199999988079071,
+                  "max": 0.47189998626708984,
+                  "mean": 0.1497466266155243
+                }
+              }
+            },
+            "composite_method": "median",
+            "period_info": {
+              "type": "post",
+              "start": "2022-10-08 00:00:00",
+              "end": "2022-10-15 00:00:00",
+              "name": "post_week_2"
+            }
+          }
+        },
+        "post_week_3": {
+          "file_path": "hurricane_data/Ian_post_week_3_processed.npy",
+          "shape": [
+            6,
+            3660,
+            3660
+          ],
+          "metadata": {
+            "shape": [
+              6,
+              3660,
+              3660
+            ],
+            "bands": [
+              "B02",
+              "B03",
+              "B04",
+              "B8A",
+              "B11",
+              "B12"
+            ],
+            "band_details": {
+              "B02": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022288T160229.v2.0.B02.tif",
+                  "HLS.S30.T17RML.2022288T160229.v2.0.B02.tif",
+                  "HLS.S30.T17RMJ.2022288T160229.v2.0.B02.tif",
+                  "HLS.S30.T17RLL.2022288T160229.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022288T160229.v2.0.B02.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.222499966621399,
+                  "mean": 0.07650988548994064
+                }
+              },
+              "B03": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022288T160229.v2.0.B03.tif",
+                  "HLS.S30.T17RML.2022288T160229.v2.0.B03.tif",
+                  "HLS.S30.T17RLL.2022288T160229.v2.0.B03.tif",
+                  "HLS.S30.T17RMJ.2022288T160229.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022288T160229.v2.0.B03.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.00039999998989515007,
+                  "max": 1.1095999479293823,
+                  "mean": 0.0865628570318222
+                }
+              },
+              "B04": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022288T160229.v2.0.B04.tif",
+                  "HLS.S30.T17RML.2022288T160229.v2.0.B04.tif",
+                  "HLS.S30.T17RMJ.2022288T160229.v2.0.B04.tif",
+                  "HLS.S30.T17RLL.2022288T160229.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022288T160229.v2.0.B04.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.1365000009536743,
+                  "mean": 0.08184023201465607
+                }
+              },
+              "B8A": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022288T160229.v2.0.B8A.tif",
+                  "HLS.S30.T17RMJ.2022288T160229.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022288T160229.v2.0.B8A.tif",
+                  "HLS.S30.T17RLK.2022288T160229.v2.0.B8A.tif",
+                  "HLS.S30.T17RML.2022288T160229.v2.0.B8A.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.3737999200820923,
+                  "mean": 0.27970442175865173
+                }
+              },
+              "B11": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022288T160229.v2.0.B11.tif",
+                  "HLS.S30.T17RML.2022288T160229.v2.0.B11.tif",
+                  "HLS.S30.T17RLL.2022288T160229.v2.0.B11.tif",
+                  "HLS.S30.T17RMJ.2022288T160229.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022288T160229.v2.0.B11.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.7645999789237976,
+                  "mean": 0.14481070637702942
+                }
+              },
+              "B12": {
+                "files_used": [
+                  "HLS.S30.T17RLK.2022288T160229.v2.0.B12.tif",
+                  "HLS.S30.T17RML.2022288T160229.v2.0.B12.tif",
+                  "HLS.S30.T17RLL.2022288T160229.v2.0.B12.tif",
+                  "HLS.S30.T17RMJ.2022288T160229.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022288T160229.v2.0.B12.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0004999999655410647,
+                  "max": 0.517799973487854,
+                  "mean": 0.08351564407348633
+                }
+              }
+            },
+            "composite_method": "median",
+            "period_info": {
+              "type": "post",
+              "start": "2022-10-15 00:00:00",
+              "end": "2022-10-22 00:00:00",
+              "name": "post_week_3"
+            }
+          }
+        },
+        "post_week_4": {
+          "file_path": "hurricane_data/Ian_post_week_4_processed.npy",
+          "shape": [
+            6,
+            3660,
+            3660
+          ],
+          "metadata": {
+            "shape": [
+              6,
+              3660,
+              3660
+            ],
+            "bands": [
+              "B02",
+              "B03",
+              "B04",
+              "B8A",
+              "B11",
+              "B12"
+            ],
+            "band_details": {
+              "B02": {
+                "files_used": [
+                  "HLS.S30.T17RMK.2022295T160509.v2.0.B02.tif",
+                  "HLS.S30.T17RLL.2022298T160339.v2.0.B02.tif",
+                  "HLS.S30.T17RMJ.2022295T160509.v2.0.B02.tif",
+                  "HLS.S30.T17RMK.2022298T160339.v2.0.B02.tif",
+                  "HLS.S30.T17RML.2022298T160339.v2.0.B02.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.7116000056266785,
+                  "mean": 0.025506703183054924
+                }
+              },
+              "B03": {
+                "files_used": [
+                  "HLS.S30.T17RMK.2022295T160509.v2.0.B03.tif",
+                  "HLS.S30.T17RLL.2022298T160339.v2.0.B03.tif",
+                  "HLS.S30.T17RMJ.2022295T160509.v2.0.B03.tif",
+                  "HLS.S30.T17RMK.2022298T160339.v2.0.B03.tif",
+                  "HLS.S30.T17RML.2022298T160339.v2.0.B03.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.6775000095367432,
+                  "mean": 0.04647521302103996
+                }
+              },
+              "B04": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022298T160339.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022295T160509.v2.0.B04.tif",
+                  "HLS.S30.T17RMK.2022298T160339.v2.0.B04.tif",
+                  "HLS.S30.T17RMJ.2022295T160509.v2.0.B04.tif",
+                  "HLS.S30.T17RML.2022298T160339.v2.0.B04.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.7055999636650085,
+                  "mean": 0.04104723781347275
+                }
+              },
+              "B8A": {
+                "files_used": [
+                  "HLS.S30.T17RML.2022298T160339.v2.0.B8A.tif",
+                  "HLS.S30.T17RLL.2022298T160339.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022295T160509.v2.0.B8A.tif",
+                  "HLS.S30.T17RMK.2022298T160339.v2.0.B8A.tif",
+                  "HLS.S30.T17RMJ.2022295T160509.v2.0.B8A.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 1.1868000030517578,
+                  "mean": 0.2228209376335144
+                }
+              },
+              "B11": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022298T160339.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022295T160509.v2.0.B11.tif",
+                  "HLS.S30.T17RMK.2022298T160339.v2.0.B11.tif",
+                  "HLS.S30.T17RMJ.2022295T160509.v2.0.B11.tif",
+                  "HLS.S30.T17RML.2022298T160339.v2.0.B11.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.8549000024795532,
+                  "mean": 0.1560036838054657
+                }
+              },
+              "B12": {
+                "files_used": [
+                  "HLS.S30.T17RLL.2022298T160339.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022295T160509.v2.0.B12.tif",
+                  "HLS.S30.T17RMK.2022298T160339.v2.0.B12.tif",
+                  "HLS.S30.T17RMJ.2022295T160509.v2.0.B12.tif",
+                  "HLS.S30.T17RML.2022298T160339.v2.0.B12.tif"
+                ],
+                "method": "median",
+                "stats": {
+                  "min": 0.0,
+                  "max": 0.5564000010490417,
+                  "mean": 0.07645568251609802
+                }
+              }
+            },
+            "composite_method": "median",
+            "period_info": {
+              "type": "post",
+              "start": "2022-10-22 00:00:00",
+              "end": "2022-10-29 00:00:00",
+              "name": "post_week_4"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "processing_summary": {
+    "successful": 1,
+    "failed": 0,
+    "total_composites": 8
+  }
+}

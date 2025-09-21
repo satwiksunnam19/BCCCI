@@ -1,0 +1,21 @@
+{
+  "hurricanes": [
+    {
+      "name": "Ian",
+      "date": "2022-09-28",
+      "bbox": [
+        -82.8,
+        25.8,
+        -81.2,
+        27.5
+      ],
+      "pre_days": 30,
+      "post_days": 30
+    }
+  ],
+  "data_settings": {
+    "temporal_sampling": "weekly",
+    "max_files_per_period": 5,
+    "composite_method": "median"
+  }
+}

@@ -1,6 +1,3 @@
-# Final Training Script - Production Ready & Overhauled for Stability
-# File: siamese_unet.py
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,7 +13,6 @@ import traceback
 
 warnings.filterwarnings('ignore')
 
-# --- 1. MODEL ARCHITECTURE (STABILIZED) ---
 # Switched to BatchNorm2d and added Kaiming weight initialization for better training stability.
 
 class AdaptivePadding(nn.Module):
@@ -80,7 +76,7 @@ class ProductionSiameseUNet(nn.Module):
         self.up4 = nn.ConvTranspose2d(128, 64, 2, stride=2)
         self.dec4 = RobustDoubleConv(128, 64, dropout_rate)
         
-        # Simplified to a single output head for binary segmentation
+        
         self.change_head = nn.Conv2d(64, 1, 1)
 
         self._initialize_weights()
@@ -118,9 +114,6 @@ class ProductionSiameseUNet(nn.Module):
         # Single output for flood prediction
         logits = self.change_head(d1).squeeze(1)
         return logits
-
-# --- 2. DATASET (OVERHAULED) ---
-# Implemented a guaranteed balanced patch sampling strategy.
 
 class ProductionFloodDataset(Dataset):
     def __init__(self, training_files, mode='train', patch_size=256, patches_per_image=100):
@@ -179,7 +172,6 @@ class ProductionFloodDataset(Dataset):
             pre_composite = pre_composite[:, :min_h, :min_w]
             post_composite = post_composite[:, :min_h, :min_w]
             
-            # **THE CRITICAL FIX**: Pre-calculate where floods are and are not.
             # This avoids inefficient random searching. 
             full_labels = self._create_labels(pre_composite, post_composite)
             
@@ -237,8 +229,7 @@ class ProductionFloodDataset(Dataset):
             'labels': torch.FloatTensor(patch['labels']) # Use FloatTensor for BCEWithLogitsLoss
         }
 
-# --- 3. LOSS FUNCTION (FORTIFIED) ---
-# Using a powerful combination of Focal Loss and explicit positive weighting.
+# Using a combination of Focal Loss and explicit positive weighting.
 
 class BalancedFocalLoss(nn.Module):
     def __init__(self, alpha=0.5, gamma=2.0, pos_weight_factor=10.0):

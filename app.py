@@ -13,6 +13,16 @@ from pathlib import Path
 import json
 import rasterio
 from scipy.ndimage import zoom
+from datetime import datetime, timedelta
+
+# Google Earth Engine imports
+try:
+    import ee
+    import folium
+    from streamlit_folium import folium_static
+    GEE_AVAILABLE = True
+except ImportError:
+    GEE_AVAILABLE = False
 
 # Configure page
 st.set_page_config(
@@ -21,7 +31,289 @@ st.set_page_config(
     layout="wide"
 )
 
-# Import your model (make sure siamese_unet.py is in the repo)
+# GEE Authentication function
+@st.cache_resource
+def authenticate_gee():
+    """Authenticate Google Earth Engine"""
+    if not GEE_AVAILABLE:
+        return False
+
+    try:
+        # For Streamlit Cloud deployment, use service account
+        if hasattr(st, 'secrets') and 'gee_service_account' in st.secrets:
+            credentials = ee.ServiceAccountCredentials(
+                st.secrets["gee_service_account"]["email"],
+                key_data=st.secrets["gee_service_account"]["key"]
+            )
+            ee.Initialize(credentials)
+        else:
+            # For local development
+            try:
+                ee.Initialize()
+            except:
+                return False
+        return True
+    except Exception as e:
+        st.error(f"GEE Authentication failed: {e}")
+        return False
+# Replace your existing get_hurricane_ian_hls_data and related helpers with this code.
+
+def _degrees_to_meters_width(bbox):
+    # approx conversion at mid-latitude: 1 degree lon ~ 111.32 km * cos(lat)
+    lon0, lat0, lon1, lat1 = bbox
+    center_lat = (lat0 + lat1) / 2.0
+    deg_lon_m = 111320.0 * np.cos(np.deg2rad(center_lat))
+    width_m = abs(lon1 - lon0) * deg_lon_m
+    height_m = abs(lat1 - lat0) * 111320.0
+    return width_m, height_m
+
+def _ensure_min_pixels_on_sample(np_array, min_pixels=64*64):
+    """Helper: check if array size >= min_pixels (for any band)"""
+    if getattr(np_array, "size", 0) >= min_pixels:
+        return True
+    return False
+
+def get_hurricane_ian_sentinel2_data(bbox, pre_date, post_date, max_cloud_cover=20, min_pixels=64*64):
+    """
+    Robust Sentinel-2 data fetcher for flood analysis
+    Uses Sentinel-2 MSI: MultiSpectral Instrument, Level-2A
+    """
+    aoi = ee.Geometry.Rectangle(bbox)
+
+    # Add a small buffer in time
+    pre_start = (datetime.strptime(pre_date, '%Y-%m-%d') - timedelta(days=14)).strftime('%Y-%m-%d')
+    post_end = (datetime.strptime(post_date, '%Y-%m-%d') + timedelta(days=14)).strftime('%Y-%m-%d')
+
+    # Use Sentinel-2 bands compatible with flood analysis
+    # B2 (blue), B3 (green), B4 (red), B8 (nir), B11 (swir1), B12 (swir2)
+    bands = ['B2', 'B3', 'B4', 'B8', 'B11', 'B12']
+
+    try:
+        # Use Sentinel-2 Level 2A data (surface reflectance)
+        s2_collection = ee.ImageCollection('COPERNICUS/S2_SR')
+        
+        # Filter collections
+        pre_collection = s2_collection.filterBounds(aoi).filterDate(pre_start, pre_date).filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', max_cloud_cover))
+        post_collection = s2_collection.filterBounds(aoi).filterDate(post_date, post_end).filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', max_cloud_cover))
+
+        pre_count = pre_collection.size().getInfo()
+        post_count = post_collection.size().getInfo()
+        if pre_count == 0 or post_count == 0:
+            raise ValueError(f"Insufficient images: {pre_count} pre, {post_count} post")
+
+        # Median composites
+        pre_image = pre_collection.select(bands).median().clip(aoi)
+        post_image = post_collection.select(bands).median().clip(aoi)
+
+        # First attempt: simple sampleRectangle
+        try:
+            pre_data = pre_image.sampleRectangle(region=aoi, defaultValue=0)
+            post_data = post_image.sampleRectangle(region=aoi, defaultValue=0)
+
+            # Convert to numpy arrays
+            pre_arrays = {}
+            post_arrays = {}
+            small_flag = False
+            for band in bands:
+                pre_band = np.array(pre_data.get(band).getInfo())
+                post_band = np.array(post_data.get(band).getInfo())
+
+                # If shape 1D or too small, mark small_flag
+                if pre_band.ndim != 2 or post_band.ndim != 2 or pre_band.size < 100 or post_band.size < 100:
+                    small_flag = True
+
+                pre_arrays[band] = pre_band
+                post_arrays[band] = post_band
+
+            if not small_flag and _ensure_min_pixels_on_sample(next(iter(pre_arrays.values())), min_pixels=min_pixels):
+                pre_stack = np.stack([pre_arrays[b] for b in bands], axis=0)
+                post_stack = np.stack([post_arrays[b] for b in bands], axis=0)
+                # Normalize to 0..1 (Sentinel-2 SR is 0-10000)
+                pre_stack = np.clip(pre_stack.astype(np.float32) / 10000.0, 0, 1)
+                post_stack = np.clip(post_stack.astype(np.float32) / 10000.0, 0, 1)
+                return pre_stack, post_stack, True
+            # Else fall through to more robust methods
+        except Exception as e_sample:
+            st.info("Initial sampleRectangle returned too few pixels - trying robust fallback (expand / aggregate).")
+
+        # --- Strategy A: Expand bbox slightly if very small
+        bbox_width = bbox[2] - bbox[0]
+        bbox_height = bbox[3] - bbox[1]
+        if bbox_width < 0.05 or bbox_height < 0.05:
+            # Expand to at least ~0.06 degrees (approx ~6-7 km) around center
+            center_lon = (bbox[0] + bbox[2]) / 2
+            center_lat = (bbox[1] + bbox[3]) / 2
+            expanded_bbox = [center_lon - 0.03, center_lat - 0.03, center_lon + 0.03, center_lat + 0.03]
+            aoi = ee.Geometry.Rectangle(expanded_bbox)
+            st.info(f"Expanded study area from {bbox} to {expanded_bbox}")
+            # Reclip images
+            pre_image = pre_image.clip(aoi)
+            post_image = post_image.clip(aoi)
+
+        # --- Strategy B: Aggregate (reduce resolution) to produce a reasonable pixel grid
+        # Compute physical size and choose a coarse scale
+        width_m, height_m = _degrees_to_meters_width(bbox if 'expanded_bbox' not in locals() else expanded_bbox)
+        # Choose desired target pixels along longer side (e.g. 128)
+        target_long = 128
+        longer_m = max(width_m, height_m, 1.0)
+        chosen_scale = max(30, int(np.ceil(longer_m / target_long)))  # scale in meters
+        st.info(f"Aggregating to scale={chosen_scale} m to ensure robust sampling.")
+
+        # Apply mean reducer and reproject to that scale
+        reducer = ee.Reducer.mean()
+        pre_agg = pre_image.reduceResolution(reducer=reducer, bestEffort=True).reproject(crs='EPSG:3857', scale=chosen_scale).clip(aoi)
+        post_agg = post_image.reduceResolution(reducer=reducer, bestEffort=True).reproject(crs='EPSG:3857', scale=chosen_scale).clip(aoi)
+
+        # Sample again
+        try:
+            pre_data = pre_agg.sampleRectangle(region=aoi, defaultValue=0)
+            post_data = post_agg.sampleRectangle(region=aoi, defaultValue=0)
+            pre_arrays = {}
+            post_arrays = {}
+            for band in bands:
+                pre_band = np.array(pre_data.get(band).getInfo())
+                post_band = np.array(post_data.get(band).getInfo())
+                # Double-check shapes
+                if pre_band.ndim != 2 or post_band.ndim != 2:
+                    raise ValueError(f"Aggregated band {band} not 2D")
+                pre_arrays[band] = pre_band
+                post_arrays[band] = post_band
+
+            pre_stack = np.stack([pre_arrays[b] for b in bands], axis=0)
+            post_stack = np.stack([post_arrays[b] for b in bands], axis=0)
+            pre_stack = np.clip(pre_stack.astype(np.float32) / 10000.0, 0, 1)
+            post_stack = np.clip(post_stack.astype(np.float32) / 10000.0, 0, 1)
+            return pre_stack, post_stack, True
+        except Exception as e_agg:
+            st.info("Aggregation sampling failed — trying thumbnail fallback.")
+
+        # --- Strategy C: getThumb fallback (guarantees a raster of desired px dimensions)
+        try:
+            # Choose reasonable output size
+            out_px = 256
+            pre_thumb_url = pre_image.getThumbURL({
+                'min': 0, 
+                'max': 10000, 
+                'dimensions': out_px, 
+                'format': 'png', 
+                'bands': ['B4', 'B3', 'B2']  # RGB for display
+            })
+            post_thumb_url = post_image.getThumbURL({
+                'min': 0, 
+                'max': 10000, 
+                'dimensions': out_px, 
+                'format': 'png', 
+                'bands': ['B4', 'B3', 'B2']  # RGB for display
+            })
+            
+            # Attempt to retrieve via requests
+            try:
+                import requests
+                r1 = requests.get(pre_thumb_url, timeout=20)
+                r2 = requests.get(post_thumb_url, timeout=20)
+                from io import BytesIO
+                pre_img = Image.open(BytesIO(r1.content)).convert('RGB')
+                post_img = Image.open(BytesIO(r2.content)).convert('RGB')
+                # Convert to float arrays 0..1
+                pre_arr = np.asarray(pre_img).astype(np.float32) / 255.0
+                post_arr = np.asarray(post_img).astype(np.float32) / 255.0
+                # Convert RGB to 6-channel padded arrays
+                # This is a fallback and approximate
+                pre_stub = np.stack([pre_arr[...,2], pre_arr[...,1], pre_arr[...,0], 
+                                   pre_arr[...,0], pre_arr[...,1], pre_arr[...,2]], axis=0)
+                post_stub = np.stack([post_arr[...,2], post_arr[...,1], post_arr[...,0], 
+                                    post_arr[...,0], post_arr[...,1], post_arr[...,2]], axis=0)
+                return pre_stub, post_stub, True
+            except Exception as e_req:
+                raise RuntimeError(f"Thumbnail fetch failed (network or requests not available): {e_req}")
+        except Exception as e_thumb:
+            raise RuntimeError(f"All fallback strategies failed: {e_thumb}")
+
+    except Exception as e:
+        st.error(f"Error fetching Sentinel-2 data: {e}")
+        # Helpful suggestions
+        if "Insufficient images" in str(e):
+            st.write("**Solutions:** - Increase cloud cover param; - broaden date ranges")
+        else:
+            st.write("**Try:** increase study area size, widen dates, or increase cloud_cover to 60-80% for more images.")
+        return None, None, False
+    
+# --- Small fixes for display and processing ---
+def create_rgb_display(satellite_data, enhance_factor=2.0):
+    """
+    Convert 6-band Sentinel-2 data to RGB for display
+    Bands: ['B2', 'B3', 'B4', 'B8', 'B11', 'B12']
+    RGB mapping: R=B4 (index 2), G=B3 (index 1), B=B2 (index 0)
+    """
+    if len(satellite_data.shape) != 3 or satellite_data.shape[0] != 6:
+        raise ValueError(f"Expected (6, H, W), got {satellite_data.shape}")
+    
+    # Extract RGB bands
+    red_band = satellite_data[2]    # B4 (index 2)
+    green_band = satellite_data[1]  # B3 (index 1) 
+    blue_band = satellite_data[0]   # B2 (index 0)
+    
+    # Stack to create RGB: (height, width, 3)
+    rgb_image = np.stack([red_band, green_band, blue_band], axis=-1)
+    
+    # Handle NaN values
+    rgb_image = np.nan_to_num(rgb_image, nan=0.0)
+    
+    # Apply percentile stretch for better visualization
+    p2, p98 = np.percentile(rgb_image, (2, 98))
+    if p98 > p2:  # Avoid division by zero
+        rgb_image = (rgb_image - p2) / (p98 - p2)
+    
+    # Enhance and clip
+    rgb_image = np.clip(rgb_image * enhance_factor, 0, 1)
+    
+    return rgb_image
+
+def process_image_for_demo(model, pre_image, post_image, device):
+    """
+    Ensure expected shapes and normalization before feeding model.
+    Model expects input shape: (batch, channels, H, W) with channels=6 for each (pre/post)
+    This wrapper makes minimal assumptions:
+      - If input is (6,H,W) each: fine.
+      - If input is (H,W,6): transpose.
+      - If values ~ 0..10000 -> scale to 0..1
+      - If values already 0..1 -> keep
+    """
+    try:
+        model.eval()
+        with torch.no_grad():
+            def prep(img):
+                arr = np.array(img)
+                # if H,W,6 -> transpose
+                if arr.ndim == 3 and arr.shape[2] == 6:
+                    arr = np.transpose(arr, (2,0,1))
+                if arr.ndim != 3:
+                    raise ValueError(f"Unexpected image shape: {arr.shape}")
+                # scale
+                if arr.max() > 10.0:  # likely 0..10000
+                    arr = np.clip(arr.astype(np.float32) / 10000.0, 0, 1)
+                arr = arr.astype(np.float32)
+                return arr
+
+            pre_arr = prep(pre_image)
+            post_arr = prep(post_image)
+
+            # concatenate along channel dim if your model expects 6-ch input differently,
+            # your siamese likely expects two 6-ch tensors as separate inputs.
+            pre_tensor = torch.from_numpy(pre_arr).unsqueeze(0).to(device)
+            post_tensor = torch.from_numpy(post_arr).unsqueeze(0).to(device)
+
+            logits = model(pre_tensor, post_tensor)
+            flood_prob = torch.sigmoid(logits).squeeze().cpu().numpy()
+            # Ensure 2D and normalized
+            if flood_prob.max() > 1.0 or flood_prob.min() < 0.0:
+                flood_prob = (flood_prob - flood_prob.min()) / (flood_prob.max() - flood_prob.min() + 1e-9)
+            return flood_prob
+    except Exception as e:
+        st.error(f"Error processing images: {e}")
+        return None
+
+# Import your model
 @st.cache_resource
 def load_model():
     """Load the trained model once and cache it"""
@@ -30,11 +322,20 @@ def load_model():
         
         device = 'cpu'  # Use CPU for deployment
         model = ProductionSiameseUNet(in_channels=6, dropout_rate=0.1)
-        # Download from Hugging Face
-        from huggingface_hub import hf_hub_download
-        model_path = hf_hub_download(repo_id="Satwik19/hurry", 
-                                    filename="best_model.pth")
-            # Load the trained weights
+        
+        # Try to download from Hugging Face
+        try:
+            from huggingface_hub import hf_hub_download
+            model_path = hf_hub_download(repo_id="Satwik19/hurry", 
+                                        filename="best_model.pth")
+        except:
+            # Fallback to local file
+            model_path = "best_model.pth"
+            if not Path(model_path).exists():
+                st.error("Model file not found. Please ensure best_model.pth exists.")
+                return None, None
+        
+        # Load the trained weights
         checkpoint = torch.load(model_path, map_location=device)
         if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
             model.load_state_dict(checkpoint['state_dict'])
@@ -152,8 +453,43 @@ def create_visualization(flood_map, population_data, impact_stats):
     plt.tight_layout()
     return fig
 
+# FIXED: Proper RGB conversion function
+def create_rgb_display(satellite_data, enhance_factor=2.0):
+    """
+    Convert 6-band satellite data to RGB for display
+    Args:
+        satellite_data: numpy array of shape (6, H, W) 
+        enhance_factor: brightness enhancement factor
+    Returns:
+        RGB image of shape (H, W, 3)
+    """
+    if len(satellite_data.shape) != 3 or satellite_data.shape[0] != 6:
+        raise ValueError(f"Expected (6, H, W), got {satellite_data.shape}")
+    
+    # Extract RGB bands: B4 (Red), B3 (Green), B2 (Blue)
+    # Bands: ['B2', 'B3', 'B4', 'B8A', 'B11', 'B12'] = indices [0, 1, 2, 3, 4, 5]
+    red_band = satellite_data[2]    # B4 (index 2)
+    green_band = satellite_data[1]  # B3 (index 1) 
+    blue_band = satellite_data[0]   # B2 (index 0)
+    
+    # Stack to create RGB: (height, width, 3)
+    rgb_image = np.stack([red_band, green_band, blue_band], axis=-1)
+    
+    # Handle NaN values
+    rgb_image = np.nan_to_num(rgb_image, nan=0.0)
+    
+    # Apply percentile stretch for better visualization
+    p2, p98 = np.percentile(rgb_image, (2, 98))
+    if p98 > p2:  # Avoid division by zero
+        rgb_image = (rgb_image - p2) / (p98 - p2)
+    
+    # Enhance and clip
+    rgb_image = np.clip(rgb_image * enhance_factor, 0, 1)
+    
+    return rgb_image
+
 def main():
-    st.title("🌊 Hurricane Flood Impact Analysis")
+    st.title("Hurricane Flood Impact Analysis")
     st.markdown("### Real-time flood detection using Siamese U-Net and WorldPop demographic data")
     
     # Sidebar
@@ -169,30 +505,27 @@ def main():
         st.error("Failed to load required components. Check your files.")
         return
     
-    st.success(f"✅ Model loaded successfully")
-    st.info(f"📊 Population data loaded: {np.sum(population_data):,.0f} people in study area")
+    st.success("Model loaded successfully")
+    st.info(f"Population data loaded: {np.sum(population_data):,.0f} people in study area")
     
-    # Demo section with pre-loaded examples
-    st.header("🎯 Quick Demo")
+    # Demo section with multiple options
+    st.header("Analysis Options")
     
-    col1, col2 = st.columns(2)
+    # Create tabs for different data sources
+    tab1, tab2, tab3 = st.tabs(["Pre-loaded Data", "Google Earth Engine", "Upload Data"])
     
-    with col1:
+    with tab1:
         st.subheader("Option 1: Use Example Data")
-        if st.button("🚀 Run Hurricane Ian Analysis", type="primary"):
-            # Load your pre-processed Hurricane Ian data
+        if st.button("Run Hurricane Ian Analysis", type="primary"):
             try:
-                # Try to load your actual Hurricane Ian data
-                metadata_file = Path("hurricane_data/processing_metadata.json")
+                metadata_file = Path("processing_metadata.json")
                 if metadata_file.exists():
                     with open(metadata_file, 'r') as f:
                         metadata = json.load(f)
                     
-                    # Get the first hurricane data
                     hurricane_data = metadata['processed_data'][0]
                     periods = hurricane_data['periods']
                     
-                    # Find pre and post files
                     pre_files = [p for p in periods.keys() if 'pre' in p]
                     post_files = [p for p in periods.keys() if 'post' in p]
                     
@@ -200,26 +533,16 @@ def main():
                         pre_path = periods[pre_files[-1]]['file_path']
                         post_path = periods[post_files[0]]['file_path']
                         
-                        # Load and process
                         with st.spinner("Processing Hurricane Ian satellite imagery..."):
                             pre_image = np.load(pre_path)
                             post_image = np.load(post_path)
                             
-                            # Downsample for web demo
-                            if pre_image.shape[1] > 500:
-                                scale = 500 / max(pre_image.shape[1], pre_image.shape[2])
-                                pre_image = zoom(pre_image, (1, scale, scale), order=1)
-                                post_image = zoom(post_image, (1, scale, scale), order=1)
-                            
-                            # Process through model
                             flood_map = process_image_for_demo(model, pre_image, post_image, device)
                             
                             if flood_map is not None:
-                                # Calculate impact
                                 impact_stats = calculate_impact(flood_map, population_data, confidence_threshold)
                                 
-                                # Display results
-                                st.success("✅ Analysis Complete!")
+                                st.success("Analysis Complete!")
                                 
                                 col_a, col_b, col_c = st.columns(3)
                                 with col_a:
@@ -229,49 +552,174 @@ def main():
                                 with col_c:
                                     st.metric("Flooded Area", f"{impact_stats['flooded_area_km2']:.1f} km²")
                                 
-                                # Create visualization
                                 fig = create_visualization(flood_map, population_data, impact_stats)
                                 st.pyplot(fig)
                                 
-                                # Detailed stats
-                                with st.expander("📊 Detailed Statistics"):
+                                with st.expander("Detailed Statistics"):
                                     st.write(f"**Total Population in Study Area:** {impact_stats['total_population']:,.0f} people")
                                     st.write(f"**Population Density in Flooded Areas:** {impact_stats['population_density_flooded']:.1f} people/km²")
                                     st.write(f"**Data Source:** {pop_file}")
                                     st.write(f"**Model:** Siamese U-Net with WorldPop integration")
                                     st.write(f"**Hurricane:** {hurricane_data['hurricane']}")
-                        
                 else:
-                    st.warning("Hurricane Ian data not found. Upload your own data below.")
+                    st.warning("Hurricane Ian data not found. Try other options.")
                     
             except Exception as e:
                 st.error(f"Error running example: {e}")
-    
-    with col2:
-        st.subheader("Option 2: Upload Your Own Data")
+
+    with tab2:
+        st.subheader("Option 2: Real-time Satellite Data")
+        
+        if not GEE_AVAILABLE:
+            st.error("Google Earth Engine not available. Install: pip install earthengine-api folium streamlit-folium")
+            return
+        
+        gee_auth = authenticate_gee()
+        
+        if gee_auth:
+            st.success("Connected to Google Earth Engine")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                demo_areas = {
+                    "Fort Myers (Coastal Impact)": [-82.1, 26.4, -81.6, 26.8],
+                    "Cape Coral (Residential)": [-82.0, 26.5, -81.8, 26.7], 
+                    "Sanibel Island (Barrier Island)": [-82.2, 26.4, -82.0, 26.5],
+                    "Naples (Urban/Coastal)": [-81.8, 26.1, -81.6, 26.3]
+                }
+                
+                selected_area = st.selectbox("Select Study Area", list(demo_areas.keys()))
+                bbox = demo_areas[selected_area]
+                
+                pre_date = st.date_input("Pre-Hurricane Date", 
+                                       value=datetime(2022, 9, 20),
+                                       min_value=datetime(2022, 9, 1),
+                                       max_value=datetime(2022, 9, 27))
+                
+                post_date = st.date_input("Post-Hurricane Date",
+                                        value=datetime(2022, 10, 5),
+                                        min_value=datetime(2022, 9, 28),
+                                        max_value=datetime(2022, 10, 15))
+                
+                cloud_cover = st.slider("Max Cloud Cover %", 0, 50, 20)
+            
+            with col2:
+                center_lat = (bbox[1] + bbox[3]) / 2
+                center_lon = (bbox[0] + bbox[2]) / 2
+                
+                m = folium.Map(location=[center_lat, center_lon], zoom_start=11)
+                folium.Rectangle(
+                    bounds=[[bbox[1], bbox[0]], [bbox[3], bbox[2]]],
+                    color='red',
+                    fill=True,
+                    fillOpacity=0.3,
+                    popup=f"Study Area: {selected_area}"
+                ).add_to(m)
+                
+                folium_static(m, width=400, height=300)
+            
+            if st.button("Fetch & Analyze Real Satellite Data", type="primary"):
+                with st.spinner(f"Fetching HLS data for {selected_area}..."):
+                    
+                    pre_data, post_data, success = get_hurricane_ian_sentinel2_data(
+                        bbox, 
+                        pre_date.strftime('%Y-%m-%d'), 
+                        post_date.strftime('%Y-%m-%d'),
+                        cloud_cover
+                    )
+                    
+                    if success and pre_data is not None and post_data is not None:
+                        st.success("Satellite data fetched successfully!")
+                        
+                        st.write(f"**Data Shape:** {pre_data.shape}")
+                        st.write(f"**Area:** {selected_area}")
+                        st.write(f"**Spatial Coverage:** ~{(bbox[2]-bbox[0])*111:.1f}km × {(bbox[3]-bbox[1])*111:.1f}km")
+                        
+                        # FIXED: Proper image display
+                        try:
+                            rgb_pre = create_rgb_display(pre_data)
+                            rgb_post = create_rgb_display(post_data)
+                            
+                            col_a, col_b = st.columns(2)
+                            with col_a:
+                                st.image(rgb_pre, caption="Pre-Hurricane RGB", use_column_width=True)
+                            with col_b:
+                                st.image(rgb_post, caption="Post-Hurricane RGB", use_column_width=True)
+                                
+                        except Exception as e:
+                            st.error(f"Error displaying images: {e}")
+                            st.write(f"Error details: {type(e).__name__}")
+                        
+                        # Run analysis
+                        st.write("**Running flood analysis...**")
+                        
+                        flood_map = process_image_for_demo(model, pre_data, post_data, device)
+                        
+                        if flood_map is not None:
+                            impact_stats = calculate_impact(flood_map, population_data, confidence_threshold)
+                            
+                            st.success("Analysis Complete!")
+                            
+                            col_x, col_y, col_z = st.columns(3)
+                            with col_x:
+                                st.metric("Affected Population", f"{impact_stats['affected_population']:,.0f}")
+                            with col_y:
+                                st.metric("Percentage Affected", f"{impact_stats['percentage_affected']:.2f}%")
+                            with col_z:
+                                st.metric("Flooded Area", f"{impact_stats['flooded_area_km2']:.1f} km²")
+                            
+                            fig = create_visualization(flood_map, population_data, impact_stats)
+                            st.pyplot(fig)
+                            
+                            st.subheader("Research Question Analysis")
+                            st.write("**Q: How many people were affected by Hurricane Ian in this area?**")
+                            st.write(f"**A:** {impact_stats['affected_population']:,.0f} people were directly affected by flooding in the {selected_area} area, representing {impact_stats['percentage_affected']:.2f}% of the local population.")
+                            
+                            st.write("**Q: What was the spatial extent of flooding?**")
+                            st.write(f"**A:** {impact_stats['flooded_area_km2']:.1f} km² were identified as flooded using deep learning analysis of real satellite data.")
+                    
+                    else:
+                        st.error("Failed to fetch satellite data. Possible reasons:")
+                        st.write("- No cloud-free imagery for selected dates")
+                        st.write("- GEE quota limits")
+                        st.write("- Network issues")
+        else:
+            st.error("Failed to connect to Google Earth Engine")
+            st.write("To enable GEE:")
+            st.code("""
+            pip install earthengine-api folium streamlit-folium
+            
+            # For authentication, add to .streamlit/secrets.toml:
+            [gee_service_account]
+            email = "your-service-account@project.iam.gserviceaccount.com"
+            key = '''-----BEGIN PRIVATE KEY-----
+            [your-private-key-content]
+            -----END PRIVATE KEY-----'''
+            """)
+
+    with tab3:
+        st.subheader("Option 3: Upload Your Own Data")
         uploaded_pre = st.file_uploader("Upload Pre-Event Satellite Image (.npy)", type=['npy'])
         uploaded_post = st.file_uploader("Upload Post-Event Satellite Image (.npy)", type=['npy'])
         
         if uploaded_pre and uploaded_post:
-            if st.button("🔍 Analyze Uploaded Images"):
+            if st.button("Analyze Uploaded Images"):
                 with st.spinner("Processing your images..."):
                     try:
-                        # Load uploaded files
                         pre_bytes = uploaded_pre.getvalue()
                         post_bytes = uploaded_post.getvalue()
                         
                         pre_image = np.load(io.BytesIO(pre_bytes))
                         post_image = np.load(io.BytesIO(post_bytes))
                         
-                        # Process
                         flood_map = process_image_for_demo(model, pre_image, post_image, device)
                         
                         if flood_map is not None:
                             impact_stats = calculate_impact(flood_map, population_data, confidence_threshold)
                             
-                            st.success("✅ Custom Analysis Complete!")
+                            st.success("Custom Analysis Complete!")
                             
-                            # Display results similar to above
                             col_a, col_b, col_c = st.columns(3)
                             with col_a:
                                 st.metric("Affected Population", f"{impact_stats['affected_population']:,.0f}")
@@ -287,7 +735,7 @@ def main():
                         st.error(f"Error processing uploaded images: {e}")
     
     # Model information
-    with st.expander("🔬 Model Information"):
+    with st.expander("Model Information"):
         st.markdown("""
         **Architecture:** Siamese U-Net for change detection
         - **Input:** 6-band satellite imagery (pre/post event)
@@ -304,7 +752,7 @@ def main():
     
     # Footer
     st.markdown("---")
-    st.markdown("**Hurricane Flood Impact Analysis** | Powered by PyTorch & Streamlit | Real WorldPop Data Integration")
+    st.markdown("**Hurricane Flood Impact Analysis** | Powered by PyTorch, Streamlit & Google Earth Engine | Real WorldPop Data Integration")
 
 if __name__ == "__main__":
     main()
